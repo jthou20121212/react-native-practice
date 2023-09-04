@@ -47,7 +47,7 @@ export default function ShareDemo2() {
     const { width, height } = Dimensions.get('window');
     const imageHeight = width / 629 * 353;
 
-    const [summaryHeight, setSummaryHeight] = useState(0);
+    const [flatListCanScrollHeight, setFlatListCanScrollHeight] = useState(0);
 
     const translateY = useSharedValue(0);
     const flatListTranslateY = useSharedValue(0);
@@ -71,7 +71,6 @@ export default function ShareDemo2() {
 
     const tapGestrue = Gesture.Tap()
         .onTouchesMove((e, manager) => {
-            const flatListCanScrollHeight = summaryHeight + TRANSLATE_HEIGHT
             // 如果外部容器已经滑动到顶部
             // case1 继续往上滑让 FlatList 响应手势，表现是正常的
             // case2 往下滑外部容器和 FlatList 会同时响应事件，外部容器只响应不处理（不改变偏移量）
@@ -95,7 +94,6 @@ export default function ShareDemo2() {
 
             translateY.value = Math.min(0, Math.max(-TRANSLATE_HEIGHT, translateY.value + e.changeY));
 
-            const flatListCanScrollHeight = summaryHeight + TRANSLATE_HEIGHT
             flatListTranslateY.value = Math.min(0, Math.max(-flatListCanScrollHeight, flatListTranslateY.value + e.changeY));;
         })
         .onEnd((e) => {
@@ -109,7 +107,7 @@ export default function ShareDemo2() {
                 console.log('jthou', "> 0");
             } else {
                 translateY.value = withTiming(-TRANSLATE_HEIGHT);
-                flatListTranslateY.value = withTiming(-(TRANSLATE_HEIGHT + summaryHeight));
+                flatListTranslateY.value = withTiming(-flatListCanScrollHeight);
 
                 console.log('jthou', "<= 0");
             }
@@ -141,7 +139,7 @@ export default function ShareDemo2() {
                 <Animated.Text style={[styles.summary, translateAnimatedStyle]}
                     onLayout={(event) => {
                         const { x, y, width, height } = event.nativeEvent.layout;
-                        setSummaryHeight(height);
+                        setFlatListCanScrollHeight(height + TRANSLATE_HEIGHT);
                     }}
                 >
                     很多人都设想过35岁失业后的去向，“可以开网约车、送快递”。然而，当越来越多的人进入这些行业，原本被视为“退路”的选择开始“内卷”起来了。
@@ -150,7 +148,7 @@ export default function ShareDemo2() {
                 <GestureDetector gesture={Gesture.Simultaneous(tapGestrue, scrollGestrue)} >
                     <Animated.FlatList
                         bounces={false}
-                        style={[{ height: height, marginBottom: -(summaryHeight + TRANSLATE_HEIGHT) }, flatListTranslateAnimatedStyle]}
+                        style={[{ height: height, marginBottom: -(flatListCanScrollHeight) }, flatListTranslateAnimatedStyle]}
                         data={DATA}
                         renderItem={({ item, index }) => <Text style={styles.text} >{item}</Text>}
                         ItemSeparatorComponent={() => <View style={styles.separator} />}
